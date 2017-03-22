@@ -1,1 +1,1 @@
-# Python-Linear-Regression
+# Linear Regression Problem, Python
