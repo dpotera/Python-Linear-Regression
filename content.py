@@ -18,10 +18,11 @@ def mean_squared_error(x, y, w):
     :return: blad sredniokwadratowy pomiedzy wyjsciami y
     oraz wyjsciami uzyskanymi z wielowamiu o parametrach w dla wejsc x
     '''
-    error = 0
-    for i in range(0,len(x)):
-        error += (y[i] - polynomial(x[i],w))**2
-    return (error / len(x))
+    error = np.empty(len(x))
+    for i in range(0, len(x)):
+        error[i] = (y[i] - polynomial(x[i], w)) ** 2
+    # error = [(y[i] - polynomial(x[i], w)) ** 2 for i in range(0, len(x))]
+    return np.mean(error)
 
 
 def design_matrix(x_train, M):
@@ -46,7 +47,8 @@ def least_squares(x_train, y_train, M):
     dopasowania
     '''
     matrix = design_matrix(x_train, M)
-    w = (np.linalg.inv(np.transpose(matrix) @ matrix)) @ np.transpose(matrix) @ y_train
+    matrixT = np.transpose(matrix)
+    w = np.linalg.inv(matrixT @ matrix) @ matrixT @ y_train
     error = mean_squared_error(x_train, y_train, w)
     return (w, error)
 
