@@ -18,11 +18,11 @@ def mean_squared_error(x, y, w):
     :return: blad sredniokwadratowy pomiedzy wyjsciami y
     oraz wyjsciami uzyskanymi z wielowamiu o parametrach w dla wejsc x
     '''
-    error = np.empty(len(x))
-    for i in range(0, len(x)):
-        error[i] = (y[i] - polynomial(x[i], w)) ** 2
-    # error = [(y[i] - polynomial(x[i], w)) ** 2 for i in range(0, len(x))]
-    return np.mean(error)
+    # error = np.empty(len(x))
+    # for i in range(0, len(x)):
+    #     error[i] = (y[i] - polynomial(x[i], w)) ** 2
+    error = [y[i] - polynomial(x[i], w) for i in range(0, len(x))]
+    return np.mean(np.square(error))
 
 
 def design_matrix(x_train, M):
@@ -62,7 +62,12 @@ def regularized_least_squares(x_train, y_train, M, regularization_lambda):
     :return: funkcja zwraca krotke (w,err), gdzie w sa parametrami dopasowanego wielomianu zgodnie z kryterium z regularyzacja l2,
     a err blad sredniokwadratowy dopasowania
     '''
-    pass
+    matrix = design_matrix(x_train, M)
+    matrixT = np.transpose(matrix)
+    I = np.eye(matrix.shape[1])
+    w = np.linalg.inv(matrixT @ matrix + regularization_lambda * I) @ matrixT @ y_train
+    error = mean_squared_error(x_train, y_train, w)
+    return (w, error)
 
 
 def model_selection(x_train, y_train, x_val, y_val, M_values):
@@ -76,7 +81,9 @@ def model_selection(x_train, y_train, x_val, y_val, M_values):
     tj. daje najmniejszy blad na ciagu walidacyjnym, train_err i val_err to bledy na sredniokwadratowe na ciagach treningowym
     i walidacyjnym
     '''
-    pass
+    W = [least_squares(x_train, y_train, m) for m in M_values ]
+    E = [(w, t_err, mean_squared_error(x_val, y_val, w)) for (w, t_err) in W ]
+    return min(E, key= lambda e:e[2])
 
 
 def regularized_model_selection(x_train, y_train, x_val, y_val, M, lambda_values):
@@ -91,4 +98,6 @@ def regularized_model_selection(x_train, y_train, x_val, y_val, M, lambda_values
     tj. daje najmniejszy blad na ciagu walidacyjnym. Wielomian dopasowany jest wg kryterium z regularyzacja. train_err i val_err to
     bledy na sredniokwadratowe na ciagach treningowym i walidacyjnym. regularization_lambda to najlepsza wartosc parametru regularyzacji
     '''
-    pass
+    Wl = [(regularized_least_squares(x_train, y_train, 7, l), l) for l in lambda_values]
+    El = [(w, t_err, mean_squared_error(x_val, y_val, w), l) for ((w, t_err), l) in Wl]
+    return min(El, key= lambda el:el[2])
